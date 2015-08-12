@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -61,11 +64,28 @@ public class CustomerController {
 		c.setPhNo(customer.getPhNo());
 		customerService.save(c);
 	}
-	
-	@RequestMapping(value="/deleteCustomer/{id}",method=RequestMethod.DELETE)
-	public void deleteCustomer(@PathVariable String id) {
-		
-		customerService.delete(Integer.parseInt(id));
+
+	@RequestMapping(value = "/deleteCustomer/{id}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public ResponseEntity<String> deleteCustomer(@PathVariable String id) {
+
+		try {
+
+			Integer.parseInt(id);
+			LOGGER.debug("Deleting A Customer");
+			customerService.delete(Integer.parseInt(id));
+			return new ResponseEntity<String>(HttpStatus.OK);
+
+		} catch (NumberFormatException e) {
+
+			return new ResponseEntity<String>("number expected",
+					HttpStatus.BAD_REQUEST);
+
+		} catch (EmptyResultDataAccessException erdae) {
+
+			return new ResponseEntity<String>("could not find the customer",
+					HttpStatus.NOT_FOUND);
+		}
 	}
 
 }
