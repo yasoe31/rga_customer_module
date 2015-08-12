@@ -40,10 +40,12 @@ public class CustomerController {
 
 	@RequestMapping(value = "/registerCustomer", method = RequestMethod.POST)
 	@ResponseBody
-	public void registerCustomer(@RequestBody Customer customer) {
+	public ResponseEntity<String> registerCustomer(
+			@RequestBody Customer customer) {
 
 		LOGGER.debug("Registering A Customer");
 		customerService.save(customer);
+		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/getACustomer/{id}", method = RequestMethod.GET)
@@ -76,6 +78,9 @@ public class CustomerController {
 		} catch (InvalidDataAccessApiUsageException e) {
 			return new ResponseEntity<String>("customer id expected",
 					HttpStatus.BAD_REQUEST);
+		}catch (NullPointerException e) {
+			return new ResponseEntity<String>("could not find",
+					HttpStatus.NOT_FOUND);
 		}
 
 	}
