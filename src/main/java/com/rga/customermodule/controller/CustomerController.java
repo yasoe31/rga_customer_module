@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -55,14 +56,22 @@ public class CustomerController {
 
 	@RequestMapping(value = "/updateCustomer", method = { RequestMethod.POST,
 			RequestMethod.PUT })
-	public void updateCustomer(@RequestBody Customer customer) {
+	@ResponseBody
+	public ResponseEntity<String> updateCustomer(@RequestBody Customer customer) {
 
-		LOGGER.debug("Updating A Customer");
-		Customer c = customerService.findOne(customer.getId());
-		c.setEmail(customer.getEmail());
-		c.setName(customer.getName());
-		c.setPhNo(customer.getPhNo());
-		customerService.save(c);
+		try {
+			LOGGER.debug("Updating A Customer");
+			Customer c = customerService.findOne(customer.getId());
+			c.setEmail(customer.getEmail());
+			c.setName(customer.getName());
+			c.setPhNo(customer.getPhNo());
+			customerService.save(c);
+			return new ResponseEntity<String>(HttpStatus.OK);
+		} catch (InvalidDataAccessApiUsageException e) {
+			return new ResponseEntity<String>("customer id expected",
+					HttpStatus.BAD_REQUEST);
+		}
+
 	}
 
 	@RequestMapping(value = "/deleteCustomer/{id}", method = RequestMethod.DELETE)
