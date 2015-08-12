@@ -48,10 +48,16 @@ public class CustomerController {
 
 	@RequestMapping(value = "/getACustomer/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public Customer getACustomer(@PathVariable String id) {
+	public ResponseEntity<Object> getACustomer(@PathVariable String id) {
 
-		LOGGER.debug("Getting A Customer");
-		return customerService.findOne(Integer.parseInt(id));
+		try {
+			LOGGER.debug("Getting a Customer");
+			return new ResponseEntity<Object>(customerService.findOne(Integer
+					.parseInt(id)), HttpStatus.OK);
+		} catch (NumberFormatException e) {
+			return new ResponseEntity<Object>("number expected",
+					HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	@RequestMapping(value = "/updateCustomer", method = { RequestMethod.POST,
