@@ -41,12 +41,31 @@ public class CustomerController {
 		LOGGER.debug("Registering A Customer");
 		customerService.save(customer);
 	}
-	
-	@RequestMapping(value="/getACustomer/{id}",method=RequestMethod.GET)
+
+	@RequestMapping(value = "/getACustomer/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	private Customer getACustomer(@PathVariable String id) {
-		
+	public Customer getACustomer(@PathVariable String id) {
+
+		LOGGER.debug("Getting A Customer");
 		return customerService.findOne(Integer.parseInt(id));
+	}
+
+	@RequestMapping(value = "/updateCustomer", method = { RequestMethod.POST,
+			RequestMethod.PUT })
+	public void updateCustomer(@RequestBody Customer customer) {
+
+		LOGGER.debug("Updating A Customer");
+		Customer c = customerService.findOne(customer.getId());
+		c.setEmail(customer.getEmail());
+		c.setName(customer.getName());
+		c.setPhNo(customer.getPhNo());
+		customerService.save(c);
+	}
+	
+	@RequestMapping(value="/deleteCustomer/{id}",method=RequestMethod.DELETE)
+	public void deleteCustomer(@PathVariable String id) {
+		
+		customerService.delete(Integer.parseInt(id));
 	}
 
 }
