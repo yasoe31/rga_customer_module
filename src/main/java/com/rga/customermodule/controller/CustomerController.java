@@ -29,12 +29,20 @@ public class CustomerController {
 	private static final Logger LOGGER = (Logger) LoggerFactory
 			.getLogger(CustomerController.class);
 
+	public CustomerController() {
+
+	}
+
+	public CustomerController(CustomerService customerService) {
+		this.customerService = customerService;
+	}
+
 	@RequestMapping(value = "/listCustomer", method = RequestMethod.GET)
 	@ResponseBody
 	public List<Customer> listCustomer() {
 
 		LOGGER.debug("Listing All Customer");
-		return (List<Customer>) customerService.findAll();
+		return (List<Customer>) customerService.listCustomer();
 
 	}
 
@@ -44,8 +52,20 @@ public class CustomerController {
 			@RequestBody Customer customer) {
 
 		LOGGER.debug("Registering A Customer");
-		customerService.save(customer);
-		return new ResponseEntity<String>(HttpStatus.OK);
+		try {
+			if (customerService.saveCustomer(customer) == null) {
+
+				return new ResponseEntity<String>(HttpStatus.OK);
+			} else {
+				return new ResponseEntity<String>(
+						customerService.saveCustomer(customer),
+						HttpStatus.BAD_REQUEST);
+			}
+
+		} catch (Exception e) {
+			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+		}
+
 	}
 
 	@RequestMapping(value = "/getACustomer/{id}", method = RequestMethod.GET)
@@ -54,8 +74,9 @@ public class CustomerController {
 
 		try {
 			LOGGER.debug("Getting a Customer");
-			return new ResponseEntity<Object>(customerService.findOne(Integer
-					.parseInt(id)), HttpStatus.OK);
+			return new ResponseEntity<Object>(
+					customerService.getACustomer(Integer.parseInt(id)),
+					HttpStatus.OK);
 		} catch (NumberFormatException e) {
 			return new ResponseEntity<Object>("number expected",
 					HttpStatus.BAD_REQUEST);
@@ -69,16 +90,16 @@ public class CustomerController {
 
 		try {
 			LOGGER.debug("Updating A Customer");
-			Customer c = customerService.findOne(customer.getId());
+			Customer c = customerService.getACustomer(customer.getId());
 			c.setEmail(customer.getEmail());
 			c.setName(customer.getName());
 			c.setPhNo(customer.getPhNo());
-			customerService.save(c);
+			customerService.saveCustomer(c);
 			return new ResponseEntity<String>(HttpStatus.OK);
 		} catch (InvalidDataAccessApiUsageException e) {
 			return new ResponseEntity<String>("customer id expected",
 					HttpStatus.BAD_REQUEST);
-		}catch (NullPointerException e) {
+		} catch (NullPointerException e) {
 			return new ResponseEntity<String>("could not find",
 					HttpStatus.NOT_FOUND);
 		}
@@ -93,7 +114,7 @@ public class CustomerController {
 
 			Integer.parseInt(id);
 			LOGGER.debug("Deleting A Customer");
-			customerService.delete(Integer.parseInt(id));
+			customerService.deleteCustomer(Integer.parseInt(id));
 			return new ResponseEntity<String>(HttpStatus.OK);
 
 		} catch (NumberFormatException e) {
